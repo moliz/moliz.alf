@@ -1,0 +1,5 @@
+activity AssertTrue(in label: String, in condition: Boolean[0..1]) {
+	if (condition != true) {
+    	WriteLine("FAILED: " + label);
+    }
+}
