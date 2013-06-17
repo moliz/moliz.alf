@@ -182,20 +182,6 @@ public abstract class LeftHandSideMapping extends SyntaxElementMapping {
                         this.controlTarget = clearAction;
                     }
                     resultNode = clearAction.getResult();
-                } else if (this.rhsUpper == 1) {
-                    AddStructuralFeatureValueAction writeAction =
-                            this.graph.addAddStructuralFeatureValueAction(
-                                    property, true);
-                    this.node = writeAction;
-                    this.resultSource = this.graph.addForkNode(
-                            "Fork(LeftHandSide@" + lhs.getId() + ")");
-                    this.assignmentTarget = this.resultSource;
-                    this.graph.addObjectFlow(
-                            objectSource, 
-                            writeAction.getObject());
-                    this.graph.addObjectFlow(
-                            this.resultSource, writeAction.getValue());
-                    resultNode = writeAction.getResult();
                 } else {
                     ClearStructuralFeatureAction clearAction =
                             this.graph.addClearStructuralFeatureAction(property);
@@ -208,10 +194,10 @@ public abstract class LeftHandSideMapping extends SyntaxElementMapping {
                     this.resultSource = this.graph.addForkNode(
                             "Fork(LeftHandSide@" + lhs.getId() + ")");
                     this.assignmentTarget = this.resultSource;
-
+                    
                     // Place property assignment mapping in a
                     // structured activity node to insure the isEmpty
-                    // test within it does start executing too soon.
+                    // test within it does not start executing too soon.
                     this.node =
                             this.graph.addStructuredActivityNode(
                                     "WriteAll(" + property.getQualifiedName() +")", 

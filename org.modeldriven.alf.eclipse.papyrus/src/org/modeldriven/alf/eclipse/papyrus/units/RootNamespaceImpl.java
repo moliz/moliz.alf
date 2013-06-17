@@ -1,10 +1,11 @@
 /*******************************************************************************
  * Copyright 2013 Data Access Technologies, Inc. (Model Driven Solutions)
+ * Copyright 2013 Ivar Jacobson International
+ * 
  * All rights reserved worldwide. This program and the accompanying materials
  * are made available for use under the terms of the GNU General Public License 
  * (GPL) version 3 that accompanies this distribution and is available at 
- * http://www.gnu.org/licenses/gpl-3.0.html. For alternative licensing terms, 
- * contact Model Driven Solutions.
+ * http://www.gnu.org/licenses/gpl-3.0.html. 
  *******************************************************************************/
 package org.modeldriven.alf.eclipse.papyrus.units;
 
@@ -156,6 +157,10 @@ public class RootNamespaceImpl extends
     	if (element instanceof PackageableElement) {
     		this.model.getPackagedElements().add((PackageableElement)element);
     	}
+    }
+    
+    public Collection<NamedElement> findInModel(String name) {
+    	return this.findNamedElements(this.model.getName() + "::" + name, false);
     }
 
 }

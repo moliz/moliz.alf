@@ -1,3 +1,12 @@
+/*******************************************************************************
+ * Copyright 2013 Data Access Technologies, Inc. (Model Driven Solutions)
+ * Copyright 2013 Ivar Jacobson International
+ * 
+ * All rights reserved worldwide. This program and the accompanying materials
+ * are made available for use under the terms of the GNU General Public License 
+ * (GPL) version 3 that accompanies this distribution and is available at 
+ * http://www.gnu.org/licenses/gpl-3.0.html. 
+ *******************************************************************************/
 package org.modeldriven.alf.eclipse.papyrus.execution;
 
 import java.io.StringReader;
@@ -172,9 +181,10 @@ public class AlfCompiler implements IAlfCompiler  {
 	private void updateOtherElements(Element element, 
 			Collection<org.modeldriven.alf.uml.Element> otherElements) {
 		if (element instanceof NamedElement) {
-			String name = "$$" + ((NamedElement)element).getName();
+			String name = "$$" + 
+					((NamedElement)element).getQualifiedName().replace("::", "$");
 			Collection<NamedElement> namedElements = 
-					rootScopeImpl.findNamedElements(name, false);
+					rootScopeImpl.findInModel(name);
 			if (!namedElements.isEmpty()) {
 				NamedElement namedElement = 
 						(NamedElement)namedElements.toArray()[0];

@@ -12,7 +12,6 @@ package org.modeldriven.alf.fuml.execution;
 import java.io.FileNotFoundException;
 import java.util.Collection;
 
-import org.apache.log4j.Level;
 import org.modeldriven.alf.uml.ElementFactory;
 import org.modeldriven.alf.uml.StereotypeApplication;
 import org.modeldriven.alf.fuml.mapping.FumlMapping;
@@ -38,12 +37,8 @@ public abstract class AlfBase extends org.modeldriven.alf.execution.AlfBase {
     protected boolean isParseOnly = false;
     protected boolean isPrint = false;
     protected boolean isFileName = false;
-    protected Level debugLevel = Level.OFF;
     
     public RootNamespaceImpl getRootScopeImpl() {
-        if (this.rootScopeImpl == null) {
-            this.rootScopeImpl = new RootNamespaceImpl();
-        }
         return this.rootScopeImpl;
     }
     
@@ -55,8 +50,7 @@ public abstract class AlfBase extends org.modeldriven.alf.execution.AlfBase {
         this.getRootScopeImpl().setLibraryDirectory(libraryDirectory);
     }
     
-    public void setDebugLevel(Level level) {
-        this.debugLevel = level;
+    public void setDebugLevel(String level) {
     }
     
     public void setIsParseOnly(boolean isParseOnly) {
@@ -172,7 +166,7 @@ public abstract class AlfBase extends org.modeldriven.alf.execution.AlfBase {
                     } else if (option.equals("l")) {
                         this.setLibraryDirectory(arg);
                     } else if (option.equals("d")) {
-                        this.setDebugLevel(Level.toLevel(arg, this.debugLevel));
+                        this.setDebugLevel(arg);
                     }
                 } else {
                     return null;
@@ -197,7 +191,12 @@ public abstract class AlfBase extends org.modeldriven.alf.execution.AlfBase {
         return null;
     }
     
+    protected RootNamespaceImpl createRootScopeImpl() {
+        return new RootNamespaceImpl();
+    }
+    
     protected void configure() {
+        this.rootScopeImpl = this.createRootScopeImpl();
     }
     
     public AlfBase() {

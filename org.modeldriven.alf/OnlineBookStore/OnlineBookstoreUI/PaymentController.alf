@@ -106,18 +106,19 @@ active class PaymentController specializes Controller {
       } or accept (PlaceOrder) {
         if (this.isValid()) {
           this.completeCheckOut();
-          accept (notification: Notification);
-          if (notification.content instanceof OnlineCustomer::ChargeApproved) {
-            ((ShoppingSession)this.session).cart = null;
-            new HomeController(this).Display();
-            break;
+          accept (notification: Notification) {
+            if (notification.content instanceof OnlineCustomer::ChargeApproved) {
+              ((ShoppingSession)this.session).cart = null;
+              new HomeController(this).Display();
+              break;
+            }
           }
         }
       } or accept (Back) {
         this.previous.Display();
         break;
       } or accept (ShowShoppingCart) {
-        new ShoppingCartController(this).Display();
+        new ShoppingCartController(new HomeController(this)).Display();
         break;
       } or accept (Home) {
         new HomeController(this).Display();
