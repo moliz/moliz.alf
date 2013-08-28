@@ -247,17 +247,31 @@ public class InstanceCreationExpressionMapping extends
                 this.graph.addCreateObjectAction(callAction.getOperation().getClass_());
             this.graph.addObjectFlow(createAction.getResult(), callAction.getTarget());
 
+        } else if (isNonAbstractClassInstantiation(instanceCreationExpression)) {
+            // Map instance creation expression to create object action
+            ElementReference referent = instanceCreationExpression.getReferent();
+            Class_ umlClass = (Class_) referent.getImpl().getUml();
+            action = this.graph.addCreateObjectAction(umlClass);
+            CreateObjectAction createObjectAction = (CreateObjectAction) action;
+            this.resultSource = createObjectAction.getResult();
+            
         } else {
-            // NOTE: Instance creation expressions for classes defined in
-            // Alf notation should never be constructorless.
-            this.throwError("Constructorless instance creation expression mapping not implemented.");
+            this.throwError("Cannot create an instance of an abstract class "
+                    + "or something that is not a class.");
+            
         }
         return action;
     }
-    
-	public InstanceCreationExpression getInstanceCreationExpression() {
+
+    public InstanceCreationExpression getInstanceCreationExpression() {
 		return (InstanceCreationExpression) this.getSource();
 	}
+    
+    private boolean isNonAbstractClassInstantiation(
+            InstanceCreationExpression instanceCreationExpression) {
+        ElementReference referent = instanceCreationExpression.getReferent();
+        return referent.getImpl().isClass() && !referent.getImpl().isAbstractClassifier();
+    }
 	
 	@Override
 	public void print(String prefix) {
