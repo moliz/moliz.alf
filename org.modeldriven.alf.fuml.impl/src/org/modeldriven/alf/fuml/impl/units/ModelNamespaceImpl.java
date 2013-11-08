@@ -62,7 +62,7 @@ public class ModelNamespaceImpl extends
 
 		if (members.isEmpty()) {
 			// TODO is here really the right place?
-			members.addAll(resolveImportedMembers(name, classifierOnly));
+			//members.addAll(resolveImportedMembers(name, classifierOnly));
 		}
 
 		return members;

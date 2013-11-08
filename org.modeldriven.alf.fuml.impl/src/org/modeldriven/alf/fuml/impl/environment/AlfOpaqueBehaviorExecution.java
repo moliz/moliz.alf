@@ -119,6 +119,7 @@ public class AlfOpaqueBehaviorExecution extends
 			Block body = parser.StatementSequenceEOF();
 			
 			UnitDefinition unit = makeUnitForBehavior(behavior, body);
+			unit.getImpl().addImplicitImports();
 			
 			NamespaceDefinition modelScope = RootNamespace.getModelScope(unit);
             modelScope.deriveAll();
@@ -161,7 +162,7 @@ public class AlfOpaqueBehaviorExecution extends
 		
 		UnitDefinition unit =  new UnitDefinition();
 		unit.setDefinition(activityDefinition);
-		unit.setIsModelLibrary(true);
+		unit.setIsModelLibrary(false);
 		activityDefinition.setUnit(unit);
 		
 		return unit;
