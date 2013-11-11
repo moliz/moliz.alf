@@ -43,11 +43,13 @@ import fUML.Syntax.Classes.Kernel.ParameterList;
 import fUML.Syntax.CommonBehaviors.BasicBehaviors.Behavior;
 import fUML.Syntax.CommonBehaviors.BasicBehaviors.OpaqueBehavior;
 
-public class AlfOpaqueBehaviorExecution extends 
-	fUML.Semantics.CommonBehaviors.BasicBehaviors.OpaqueBehaviorExecution {
-	
+public class AlfOpaqueBehaviorExecution extends
+		fUML.Semantics.CommonBehaviors.BasicBehaviors.OpaqueBehaviorExecution {
+
+	public static final String ALF_LANGUAGE_NAME = "Alf";
+
 	private static RootNamespaceImpl rootScopeImpl = null;
-	
+
 	private static RootNamespaceImpl getRootScopeImpl() {
 		if (rootScopeImpl == null) {
 			rootScopeImpl = new RootNamespaceImpl();
@@ -60,14 +62,15 @@ public class AlfOpaqueBehaviorExecution extends
 	@Override
 	public void doBody(ParameterValueList inputParameters,
 			ParameterValueList outputParameters) {
-		OpaqueBehavior behavior = (OpaqueBehavior)this.getBehavior();
+		OpaqueBehavior behavior = (OpaqueBehavior) this.getBehavior();
 		List<String> bodies = behavior.body;
 		List<String> languages = behavior.language;
 		for (int i = 0; i < languages.size(); i++) {
-			if (languages.get(i).equals("Alf")) {
+			if (languages.get(i).equals(ALF_LANGUAGE_NAME)) {
 				Element element = compile(behavior, bodies.get(i));
 				if (element instanceof Activity) {
-					this.execute((Activity)element, inputParameters, outputParameters);
+					this.execute((Activity) element, inputParameters,
+							outputParameters);
 				}
 			}
 		}
@@ -77,19 +80,17 @@ public class AlfOpaqueBehaviorExecution extends
 	public Value new_() {
 		return new AlfOpaqueBehaviorExecution();
 	}
-	
-	private void execute(
-			Activity activity, 
-			ParameterValueList inputParameters, 
+
+	private void execute(Activity activity, ParameterValueList inputParameters,
 			ParameterValueList outputParameters) {
 		ParameterValueList inputs = new ParameterValueList();
 		ParameterList parameters = activity.ownedParameter;
-		int i= 0;
-		for (Parameter parameter: parameters) {
+		int i = 0;
+		for (Parameter parameter : parameters) {
 			if (i >= inputParameters.size()) {
 				break;
-			} else if (parameter.direction == ParameterDirectionKind.in || 
-					parameter.direction == ParameterDirectionKind.inout) {
+			} else if (parameter.direction == ParameterDirectionKind.in
+					|| parameter.direction == ParameterDirectionKind.inout) {
 				ParameterValue parameterValue = new ParameterValue();
 				parameterValue.parameter = parameter;
 				parameterValue.values = inputParameters.get(i).values;
@@ -97,18 +98,18 @@ public class AlfOpaqueBehaviorExecution extends
 				i++;
 			}
 		}
-		
-		ParameterValueList outputs = 
-				this.locus.executor.execute(activity, this.context, inputs);
+
+		ParameterValueList outputs = this.locus.executor.execute(activity,
+				this.context, inputs);
 		for (int j = 0; j < outputParameters.size() && j < outputs.size(); j++) {
 			outputParameters.get(j).values = outputs.get(j).values;
 		}
 	}
 
-	public static UnitDefinition parse(
-			Behavior behavior, String textualRepresentation) {
+	public static UnitDefinition parse(Behavior behavior,
+			String textualRepresentation) {
 		getRootScopeImpl().setContext(behavior);
-		
+
 		ElementReferenceImpl.clearTemplateBindings();
 		StereotypeApplication.clearStereotypeApplications();
 
@@ -117,88 +118,89 @@ public class AlfOpaqueBehaviorExecution extends
 
 		try {
 			Block body = parser.StatementSequenceEOF();
-			
+
 			UnitDefinition unit = makeUnitForBehavior(behavior, body);
 			unit.getImpl().addImplicitImports();
-			
+
 			NamespaceDefinition modelScope = RootNamespace.getModelScope(unit);
-            modelScope.deriveAll();
-            
-            Collection<ConstraintViolation> violations = modelScope.checkConstraints();
-            if (violations.isEmpty()) {
-            	return unit;
-            } else {
-            	StringBuffer msg = new StringBuffer("Constraint violations:\n");
-                for (ConstraintViolation violation: violations) {
-                    msg.append(violation + "\n");
-                }
-                throw new FumlException(msg.toString());
-            }
-        } catch (TokenMgrError e) {
-            throw new FumlException(e.getMessage());
-        } catch (ParseException e) {
-            throw new FumlException(e.getMessage());
-        }
+			modelScope.deriveAll();
+
+			Collection<ConstraintViolation> violations = modelScope
+					.checkConstraints();
+			if (violations.isEmpty()) {
+				return unit;
+			} else {
+				StringBuffer msg = new StringBuffer("Constraint violations:\n");
+				for (ConstraintViolation violation : violations) {
+					msg.append(violation + "\n");
+				}
+				throw new FumlException(msg.toString());
+			}
+		} catch (TokenMgrError e) {
+			throw new FumlException(e.getMessage());
+		} catch (ParseException e) {
+			throw new FumlException(e.getMessage());
+		}
 	}
 
 	protected static UnitDefinition makeUnitForBehavior(Behavior behavior,
 			Block body) {
 		ActivityDefinition activityDefinition = new ActivityDefinition();
 		activityDefinition.getImpl().setExactName(behavior.name);
-		
-		for (Parameter parameter: behavior.ownedParameter) {
+
+		for (Parameter parameter : behavior.ownedParameter) {
 			FormalParameter formalParameter = new FormalParameter();
 			formalParameter.getImpl().setExactName(parameter.name);
-			formalParameter.setDirection(
-					parameter.direction == ParameterDirectionKind.return_? "return":
-						parameter.direction.toString());
-			formalParameter.setType(ElementReferenceImpl.makeElementReference(
-					org.modeldriven.alf.fuml.impl.uml.Element.wrap(parameter.type)));
+			formalParameter
+					.setDirection(parameter.direction == ParameterDirectionKind.return_ ? "return"
+							: parameter.direction.toString());
+			formalParameter
+					.setType(ElementReferenceImpl
+							.makeElementReference(org.modeldriven.alf.fuml.impl.uml.Element
+									.wrap(parameter.type)));
 			formalParameter.setNamespace(activityDefinition);
 			activityDefinition.addOwnedMember(formalParameter);
 		}
-		
+
 		activityDefinition.setBody(body);
-		
-		UnitDefinition unit =  new UnitDefinition();
+
+		UnitDefinition unit = new UnitDefinition();
 		unit.setDefinition(activityDefinition);
 		unit.setIsModelLibrary(false);
 		activityDefinition.setUnit(unit);
-		
+
 		return unit;
 	}
-	
-    public static FumlMapping map(
-    		NamespaceDefinition definition, 
-    		Collection<org.modeldriven.alf.uml.Element> otherElements) {
-        try {
-        	// NOTE: deriveAll is necessary here to ensure computation of
-        	// derived attributes of library units that may have been
-        	// imported during parsing of the model unit.
+
+	public static FumlMapping map(NamespaceDefinition definition,
+			Collection<org.modeldriven.alf.uml.Element> otherElements) {
+		try {
+			// NOTE: deriveAll is necessary here to ensure computation of
+			// derived attributes of library units that may have been
+			// imported during parsing of the model unit.
 			RootNamespace.getRootScope().deriveAll();
-			
-            FumlMapping mapping = FumlMapping.getMapping(definition);
-        	mapping.getModelElements();
-        	otherElements.addAll(((MemberMapping)mapping).mapBody());
-        	return mapping;
-        } catch (MappingError e) {
-        	throw new FumlException(e);
-        }
-    }
-    
-	public static Element compile(
-			Behavior behavior, String textualRepresentation) {
+
+			FumlMapping mapping = FumlMapping.getMapping(definition);
+			mapping.getModelElements();
+			otherElements.addAll(((MemberMapping) mapping).mapBody());
+			return mapping;
+		} catch (MappingError e) {
+			throw new FumlException(e);
+		}
+	}
+
+	public static Element compile(Behavior behavior,
+			String textualRepresentation) {
 		UnitDefinition unit = parse(behavior, textualRepresentation);
-		Collection<org.modeldriven.alf.uml.Element> otherElements =
-				new ArrayList<org.modeldriven.alf.uml.Element>();
+		Collection<org.modeldriven.alf.uml.Element> otherElements = new ArrayList<org.modeldriven.alf.uml.Element>();
 		FumlMapping mapping = map(unit.getDefinition(), otherElements);
-		
-		// NOTE: The fUML Reference Implementation does not require that 
+
+		// NOTE: The fUML Reference Implementation does not require that
 		// the otherElements actually be owned within the in-memory model
 		// representation.
-		
-		return (Element)((org.modeldriven.alf.fuml.impl.uml.Element)mapping.
-				getElement()).getBase();
+
+		return (Element) ((org.modeldriven.alf.fuml.impl.uml.Element) mapping
+				.getElement()).getBase();
 	}
-	
+
 }
