@@ -8,6 +8,7 @@
  *******************************************************************************/
 package org.modeldriven.alf.fuml.units;
 
+import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -109,7 +110,7 @@ public class ModelNamespaceImpl extends
         if (unit != null) {
             return unit;
         } else {
-            Parser parser = new Parser(path);
+            Parser parser = createParser(path);
     
             try {
                 unit = parser.UnitDefinition();
@@ -129,6 +130,10 @@ public class ModelNamespaceImpl extends
                 return null;
             }
         }
+    }
+
+    protected Parser createParser(String path) throws FileNotFoundException {
+        return new Parser(path);
     }
     
     public UnitDefinition resolveUnit(QualifiedName qualifiedName) {

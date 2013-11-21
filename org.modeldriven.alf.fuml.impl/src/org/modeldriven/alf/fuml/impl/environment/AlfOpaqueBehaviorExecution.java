@@ -48,15 +48,19 @@ public class AlfOpaqueBehaviorExecution extends
 
 	public static final String ALF_LANGUAGE_NAME = "Alf";
 
-	private static RootNamespaceImpl rootScopeImpl = null;
+	private RootNamespaceImpl rootScopeImpl = null;
 
-	private static RootNamespaceImpl getRootScopeImpl() {
+	protected RootNamespaceImpl getRootScopeImpl() {
 		if (rootScopeImpl == null) {
-			rootScopeImpl = new RootNamespaceImpl();
+			rootScopeImpl = createRootNamespace();
 			FumlMapping.setFumlFactory(new FumlMappingFactory());
 			FumlMapping.setElementFactory(new ElementFactory());
 		}
 		return rootScopeImpl;
+	}
+
+	protected RootNamespaceImpl createRootNamespace() {
+		return new RootNamespaceImpl();
 	}
 
 	@Override
@@ -106,9 +110,9 @@ public class AlfOpaqueBehaviorExecution extends
 		}
 	}
 
-	public static UnitDefinition parse(Behavior behavior,
+	public UnitDefinition parse(Behavior behavior,
 			String textualRepresentation) {
-		getRootScopeImpl().setContext(behavior);
+		getRootScopeImpl().setContext(behavior.namespace);
 
 		ElementReferenceImpl.clearTemplateBindings();
 		StereotypeApplication.clearStereotypeApplications();
@@ -121,6 +125,7 @@ public class AlfOpaqueBehaviorExecution extends
 
 			UnitDefinition unit = makeUnitForBehavior(behavior, body);
 			unit.getImpl().addImplicitImports();
+			setUnitNamespace(unit, behavior);
 
 			NamespaceDefinition modelScope = RootNamespace.getModelScope(unit);
 			modelScope.deriveAll();
@@ -143,7 +148,15 @@ public class AlfOpaqueBehaviorExecution extends
 		}
 	}
 
-	protected static UnitDefinition makeUnitForBehavior(Behavior behavior,
+	private void setUnitNamespace(UnitDefinition unit, Behavior behavior) {
+		if (behavior.specification != null)
+			if (behavior.specification.owner != null)
+				unit.setNamespace(ElementReferenceImpl
+						.makeElementReference(org.modeldriven.alf.fuml.impl.uml.Element
+								.wrap(behavior.specification.owner)));
+	}
+
+	protected UnitDefinition makeUnitForBehavior(Behavior behavior,
 			Block body) {
 		ActivityDefinition activityDefinition = new ActivityDefinition();
 		activityDefinition.getImpl().setExactName(behavior.name);
@@ -172,7 +185,7 @@ public class AlfOpaqueBehaviorExecution extends
 		return unit;
 	}
 
-	public static FumlMapping map(NamespaceDefinition definition,
+	public FumlMapping map(NamespaceDefinition definition,
 			Collection<org.modeldriven.alf.uml.Element> otherElements) {
 		try {
 			// NOTE: deriveAll is necessary here to ensure computation of
@@ -189,7 +202,7 @@ public class AlfOpaqueBehaviorExecution extends
 		}
 	}
 
-	public static Element compile(Behavior behavior,
+	public Element compile(Behavior behavior,
 			String textualRepresentation) {
 		UnitDefinition unit = parse(behavior, textualRepresentation);
 		Collection<org.modeldriven.alf.uml.Element> otherElements = new ArrayList<org.modeldriven.alf.uml.Element>();
