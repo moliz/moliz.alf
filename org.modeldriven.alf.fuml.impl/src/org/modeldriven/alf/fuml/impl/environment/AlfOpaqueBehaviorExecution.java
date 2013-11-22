@@ -112,7 +112,7 @@ public class AlfOpaqueBehaviorExecution extends
 
 	public UnitDefinition parse(Behavior behavior,
 			String textualRepresentation) {
-		getRootScopeImpl().setContext(behavior.namespace);
+		getRootScopeImpl().setContext(behavior);
 
 		ElementReferenceImpl.clearTemplateBindings();
 		StereotypeApplication.clearStereotypeApplications();

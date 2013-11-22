@@ -14,6 +14,7 @@ import org.modeldriven.alf.syntax.units.Member;
 import org.modeldriven.alf.syntax.units.ModelNamespace;
 import org.modeldriven.alf.syntax.units.impl.ImportedMemberImpl;
 
+import fUML.Syntax.Classes.Kernel.Class_;
 import fUML.Syntax.Classes.Kernel.Classifier;
 import fUML.Syntax.Classes.Kernel.Element;
 import fUML.Syntax.Classes.Kernel.NamedElement;
@@ -39,11 +40,56 @@ public class ModelNamespaceImpl extends
 	@Override
 	public Collection<Member> resolve(String name, boolean classifierOnly) {
 		Collection<Member> members = new ArrayList<Member>();
+
 		if (this.contextNamespace != null) {
-			// TODO Handle resolution in enclosing namespaces
-			// TODO Handle resolution of absolute namespace paths
-			for (NamedElement element : this.contextNamespace.member) {
-				if (!classifierOnly || element instanceof Classifier) {
+			boolean resolved = resolveInContextNamespace(members, name,
+					classifierOnly);
+
+			if (!resolved)
+				resolved = resolveInContext(members, name, classifierOnly);
+
+			if (!resolved)
+				resolved = resolveInRootNamespace(members, name, classifierOnly);
+		}
+
+		return members;
+	}
+
+	private boolean resolveInContextNamespace(Collection<Member> members,
+			String name, boolean classifierOnly) { // package
+		boolean resolved = false;
+		if (this.contextNamespace.namespace != null)
+			resolved = members.addAll(resolve(this.contextNamespace.namespace,
+					name, classifierOnly, true));
+
+		return resolved;
+	}
+
+	private boolean resolveInContext(Collection<Member> members, String name,
+			boolean classifierOnly) { // class
+		boolean resolved = false;
+		resolved = members.addAll(resolve(this.contextNamespace, name,
+				classifierOnly, false));
+		return resolved;
+	}
+
+	private boolean resolveInRootNamespace(Collection<Member> members,
+			String name, boolean classifierOnly) { // root namespace
+		boolean resolved = false;
+		Namespace rootNamespace = getRootNamespace();
+		resolved = members.addAll(resolve(rootNamespace, name, classifierOnly,
+				true));
+		return resolved;
+	}
+
+	private Collection<Member> resolve(Namespace namespace, String name,
+			boolean classifierOnly, boolean classesAndPackagesOnly) {
+		Collection<Member> members = new ArrayList<Member>();
+		if (namespace != null) {
+			for (NamedElement element : namespace.member) {
+				if ((!classifierOnly || element instanceof Classifier)
+						&& (!classesAndPackagesOnly
+								|| element instanceof Class_ || element instanceof fUML.Syntax.Classes.Kernel.Package)) {
 					if (name.equals(element.name))
 						members.add(ImportedMemberImpl.makeImportedMember(
 								element.name,
@@ -53,5 +99,12 @@ public class ModelNamespaceImpl extends
 			}
 		}
 		return members;
+	}
+	
+	private Namespace getRootNamespace() {
+		Namespace rootNamespace = this.contextNamespace;		
+		while(rootNamespace.namespace != null)
+			rootNamespace = rootNamespace.namespace;		
+		return rootNamespace;
 	}
 }
